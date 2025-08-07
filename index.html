@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rural Virginia Trivia Quiz</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        h1 {
+            text-align: center;
+            color: #2d3748;
+            margin-bottom: 10px;
+            font-size: 2.5rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #718096;
+            margin-bottom: 30px;
+            font-size: 1.1rem;
+        }
+
+        .quiz-info {
+            background: #e6fffa;
+            border-left: 4px solid #38b2ac;
+            padding: 20px;
+            margin-bottom: 30px;
+            border-radius: 8px;
+        }
+
+        .question-card {
+            background: #ffffff;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e2e8f0;
+            display: none;
+            transition: all 0.3s ease;
+        }
+
+        .question-card.active {
+            display: block;
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .question-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .question-number {
+            background: #667eea;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        .question-type {
+            background: #fed7d7;
+            color: #c53030;
+            padding: 6px 12px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-left: auto;
+        }
+
+        .question-text {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 20px;
+            line-height: 1.4;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .option {
+            background: #f7fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 15px 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .option:hover {
+            background: #edf2f7;
+            border-color: #cbd5e0;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .option.selected {
+            background: #bee3f8;
+            border-color: #4299e1;
+            color: #2b6cb0;
+        }
+
+        .option.correct {
+            background: #c6f6d5;
+            border-color: #68d391;
+            color: #2f855a;
+        }
+
+        .option.incorrect {
+            background: #fed7d7;
+            border-color: #fc8181;
+            color: #c53030;
+        }
+
+        .checkbox-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+        }
+
+        .checkbox-option {
+            background: #f7fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .checkbox-option:hover {
+            background: #edf2f7;
+            border-color: #cbd5e0;
+        }
+
+        .checkbox-option.selected {
+            background: #bee3f8;
+            border-color: #4299e1;
+            color: #2b6cb0;
+        }
+
+        .checkbox-option.correct {
+            background: #c6f6d5;
+            border-color: #68d391;
+            color: #2f855a;
+        }
+
+        .checkbox-option.incorrect {
+            background: #fed7d7;
+            border-color: #fc8181;
+            color: #c53030;
+        }
+
+        .fill-blank {
+            background: #f7fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 15px;
+            font-size: 1.1rem;
+            width: 100%;
+            margin-top: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .fill-blank:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5a67d8;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #4a5568;
+        }
+
+        .btn-secondary:hover {
+            background: #cbd5e0;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        .score-display {
+            text-align: center;
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            color: #4a5568;
+        }
+
+        .results {
+            display: none;
+            text-align: center;
+            padding: 30px;
+            background: #f7fafc;
+            border-radius: 15px;
+            margin-top: 30px;
+        }
+
+        .results.show {
+            display: block;
+        }
+
+        .final-score {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .feedback {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 10px;
+            font-weight: 600;
+        }
+
+        .feedback.correct {
+            background: #c6f6d5;
+            color: #2f855a;
+            border: 1px solid #68d391;
+        }
+
+        .feedback.incorrect {
+            background: #fed7d7;
+            color: #c53030;
+            border: 1px solid #fc8181;
+        }
+
+        .answer-explanation {
+            margin-top: 10px;
+            font-style: italic;
+            color: #4a5568;
+            font-weight: normal;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+                margin: 10px;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            .question-text {
+                font-size: 1.1rem;
+            }
+
+            .buttons {
+                flex-direction: column;
+            }
+        }
+
+        .emoji {
+            font-size: 1.2em;
+            margin-right: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏞️ Rural Virginia Trivia Quiz</h1>
+        <p class="subtitle">Test your knowledge about rural communities and the Virginia Rural Health Plan!</p>
+        
+        <div class="quiz-info">
+            <p><strong>📝 Instructions:</strong> Answer all questions to test your knowledge about rural Virginia. You'll get immediate feedback and a final score at the end!</p>
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress-fill" style="width: 0%;"></div>
+        </div>
+
+        <div class="score-display">
+            <span class="emoji">🎯</span>Question <span id="current-question">1</span> of <span id="total-questions">10</span>
+        </div>
+
+        <!-- Question 1 -->
+        <div class="question-card active" data-question="1">
+            <div class="question-header">
+                <span class="question-number">Question 1</span>
+                <span class="question-type">Multiple Choice</span>
+            </div>
+            <div class="question-text">What does "rural" mean?</div>
+            <div class="options">
+                <div class="option" data-value="A">A) A big city</div>
+                <div class="option" data-value="B">B) A small town or countryside</div>
+                <div class="option" data-value="C">C) A beach town</div>
+            </div>
+            <div class="feedback" id="feedback-1"></div>
+        </div>
+
+        <!-- Question 2 -->
+        <div class="question-card" data-question="2">
+            <div class="question-header">
+                <span class="question-number">Question 2</span>
+                <span class="question-type">Multiple Choice</span>
+            </div>
+            <div class="question-text">What is one thing that helps rural people see a doctor from home?</div>
+            <div class="options">
+                <div class="option" data-value="A">A) A bicycle</div>
+                <div class="option" data-value="B">B) A library</div>
+                <div class="option" data-value="C">C) The internet (broadband)</div>
+            </div>
+            <div class="feedback" id="feedback-2"></div>
+        </div>
+
+        <!-- Question 3 -->
+        <div class="question-card" data-question="3">
+            <div class="question-header">
+                <span class="question-number">Question 3</span>
+                <span class="question-type">True/False</span>
+            </div>
+            <div class="question-text">True or False: All people in Virginia have the same internet access.</div>
+            <div class="options">
+                <div class="option" data-value="true">True</div>
+                <div class="option" data-value="false">False</div>
+            </div>
+            <div class="feedback" id="feedback-3"></div>
+        </div>
+
+        <!-- Question 4 -->
+        <div class="question-card" data-question="4">
+            <div class="question-header">
+                <span class="question-number">Question 4</span>
+                <span class="question-type">Fill in the Blank</span>
+            </div>
+            <div class="question-text">Good ________ helps students get better jobs when they grow up.</div>
+            <input type="text" class="fill-blank" id="answer-4" placeholder="Type your answer here...">
+            <div class="feedback" id="feedback-4"></div>
+        </div>
+
+        <!-- Question 5 -->
+        <div class="question-card" data-question="5">
+            <div class="question-header">
+                <span class="question-number">Question 5</span>
+                <span class="question-type">Multiple Choice</span>
+            </div>
+            <div class="question-text">Why do we need good transportation in rural areas?</div>
+            <div class="options">
+                <div class="option" data-value="A">A) To go on vacation</div>
+                <div class="option" data-value="B">B) To get to doctors, school, and stores</div>
+                <div class="option" data-value="C">C) To fly planes</div>
+            </div>
+            <div class="feedback" id="feedback-5"></div>
+        </div>
+
+        <!-- Question 6 -->
+        <div class="question-card" data-question="6">
+            <div class="question-header">
+                <span class="question-number">Question 6</span>
+                <span class="question-type">Multiple Choice</span>
+            </div>
+            <div class="question-text">Which group helps little kids get ready for school and teaches families about health and food?</div>
+            <div class="options">
+                <div class="option" data-value="A">A) NASA</div>
+                <div class="option" data-value="B">B) Head Start</div>
+                <div class="option" data-value="C">C) DMV</div>
+            </div>
+            <div class="feedback" id="feedback-6"></div>
+        </div>
+
+        <!-- Question 7 -->
+        <div class="question-card" data-question="7">
+            <div class="question-header">
+                <span class="question-number">Question 7</span>
+                <span class="question-type">Multiple Select</span>
+            </div>
+            <div class="question-text">What does the Virginia Rural Health Plan try to make better? (Pick all that apply)</div>
+            <div class="checkbox-group">
+                <div class="checkbox-option" data-value="cell">📱 Cell phone cases</div>
+                <div class="checkbox-option" data-value="food">🍎 Healthy food</div>
+                <div class="checkbox-option" data-value="health">🏥 Healthcare</div>
+                <div class="checkbox-option" data-value="internet">🌐 Internet</div>
+                <div class="checkbox-option" data-value="games">🎮 Video games</div>
+            </div>
+            <div class="feedback" id="feedback-7"></div>
+        </div>
+
+        <!-- Question 8 -->
+        <div class="question-card" data-question="8">
+            <div class="question-header">
+                <span class="question-number">Question 8</span>
+                <span class="question-type">True/False</span>
+            </div>
+            <div class="question-text">True or False: The plan was written by just one person.</div>
+            <div class="options">
+                <div class="option" data-value="true">True</div>
+                <div class="option" data-value="false">False</div>
+            </div>
+            <div class="feedback" id="feedback-8"></div>
+        </div>
+
+        <!-- Question 9 -->
+        <div class="question-card" data-question="9">
+            <div class="question-header">
+                <span class="question-number">Question 9</span>
+                <span class="question-type">Multiple Choice</span>
+            </div>
+            <div class="question-text">Why is having a safe home important?</div>
+            <div class="options">
+                <div class="option" data-value="A">A) It helps you grow food inside</div>
+                <div class="option" data-value="B">B) It keeps people warm, safe, and healthy</div>
+                <div class="option" data-value="C">C) So you can throw parties</div>
+            </div>
+            <div class="feedback" id="feedback-9"></div>
+        </div>
+
+        <!-- Question 10 -->
+        <div class="question-card" data-question="10">
+            <div class="question-header">
+                <span class="question-number">Question 10</span>
+                <span class="question-type">Multiple Choice</span>
+            </div>
+            <div class="question-text">What is a challenge for rural families who don't have much money?</div>
+            <div class="options">
+                <div class="option" data-value="A">A) Too many shopping malls</div>
+                <div class="option" data-value="B">B) No roller coasters</div>
+                <div class="option" data-value="C">C) Hard to afford internet or healthcare</div>
+            </div>
+            <div class="feedback" id="feedback-10"></div>
+        </div>
+
+        <div class="buttons">
+            <button class="btn btn-secondary" id="prev-btn" onclick="previousQuestion()" disabled>← Previous</button>
+            <button class="btn btn-primary" id="next-btn" onclick="nextQuestion()">Next →</button>
+        </div>
+
+        <div class="results" id="results">
+            <h2>🎉 Quiz Complete!</h2>
+            <div class="final-score" id="final-score">0/10</div>
+            <p id="score-message">Great job completing the quiz!</p>
+            <button class="btn btn-primary" onclick="restartQuiz()" style="margin-top: 20px;">Take Quiz Again</button>
+        </div>
+    </div>
+
+    <script>
+        // Quiz data and state
+        const quizState = {
+            currentQuestion: 1,
+            totalQuestions: 10,
+            answers: {},
+            score: 0,
+            answered: {}
+        };
+
+        // Correct answers
+        const correctAnswers = {
+            1: 'B',
+            2: 'C', 
+            3: 'false',
+            4: 'education',
+            5: 'B',
+            6: 'B',
+            7: ['food', 'health', 'internet'],
+            8: 'false',
+            9: 'B',
+            10: 'C'
+        };
+
+        // Answer explanations
+        const explanations = {
+            1: "Rural refers to small towns and countryside areas, not big cities or beaches.",
+            2: "Internet (broadband) enables telemedicine, allowing rural residents to consult doctors remotely.",
+            3: "Internet access varies significantly between urban and rural areas in Virginia.",
+            4: "Education is key to helping students prepare for better career opportunities.",
+            5: "Good transportation helps rural residents access essential services like healthcare, education, and shopping.",
+            6: "Head Start is a federal program that helps prepare children for school and supports families.",
+            7: "The Virginia Rural Health Plan focuses on improving healthcare, healthy food access, and internet connectivity.",
+            8: "The plan was developed collaboratively by many people from different communities across Virginia.",
+            9: "Safe housing is fundamental to health, providing protection and stability for families.",
+            10: "Rural families with limited income often struggle to afford basic services like internet and healthcare."
+        };
+
+        // Initialize quiz
+        function initQuiz() {
+            updateProgress();
+            updateNavigationButtons();
+            setupEventListeners();
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // Multiple choice options
+            document.querySelectorAll('.option').forEach(option => {
+                option.addEventListener('click', function() {
+                    const questionNum = parseInt(this.closest('.question-card').dataset.question);
+                    const value = this.dataset.value;
+                    selectOption(questionNum, value, this);
+                });
+            });
+
+            // Checkbox options
+            document.querySelectorAll('.checkbox-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    const questionNum = parseInt(this.closest('.question-card').dataset.question);
+                    const value = this.dataset.value;
+                    toggleCheckbox(questionNum, value, this);
+                });
+            });
+
+            // Fill in the blank
+            document.getElementById('answer-4').addEventListener('input', function() {
+                const questionNum = 4;
+                quizState.answers[questionNum] = this.value.toLowerCase().trim();
+                checkAnswer(questionNum);
+            });
+        }
+
+        // Select option for multiple choice and true/false
+        function selectOption(questionNum, value, element) {
+            const questionCard = element.closest('.question-card');
+            questionCard.querySelectorAll('.option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            element.classList.add('selected');
+            
+            quizState.answers[questionNum] = value;
+            checkAnswer(questionNum);
+        }
+
+        // Toggle checkbox for multiple select
+        function toggleCheckbox(questionNum, value, element) {
+            if (!quizState.answers[questionNum]) {
+                quizState.answers[questionNum] = [];
+            }
+            
+            const answerArray = quizState.answers[questionNum];
+            const index = answerArray.indexOf(value);
+            
+            if (index > -1) {
+                answerArray.splice(index, 1);
+                element.classList.remove('selected');
+            } else {
+                answerArray.push(value);
+                element.classList.add('selected');
+            }
+            
+            checkAnswer(questionNum);
+        }
+
+        // Check answer and provide feedback
+        function checkAnswer(questionNum) {
+            if (quizState.answered[questionNum]) return;
+            
+            const userAnswer = quizState.answers[questionNum];
+            const correctAnswer = correctAnswers[questionNum];
+            const feedbackElement = document.getElementById(`feedback-${questionNum}`);
+            
+            let isCorrect = false;
+            
+            if (Array.isArray(correctAnswer)) {
+                // Multiple select question
+                const userSet = new Set(userAnswer || []);
+                const correctSet = new Set(correctAnswer);
+                isCorrect = userSet.size === correctSet.size && 
+                           [...userSet].every(val => correctSet.has(val));
+            } else if (questionNum === 4) {
+                // Fill in the blank - case insensitive
+                isCorrect = userAnswer === correctAnswer;
+            } else {
+                // Regular comparison
+                isCorrect = userAnswer === correctAnswer;
+            }
+            
+            if (userAnswer && (questionNum !== 4 || userAnswer.length > 0)) {
+                quizState.answered[questionNum] = true;
+                
+                if (isCorrect) {
+                    quizState.score++;
+                    feedbackElement.className = 'feedback correct';
+                    feedbackElement.innerHTML = `
+                        <span class="emoji">✅</span> Correct! 
+                        <div class="answer-explanation">${explanations[questionNum]}</div>
+                    `;
+                } else {
+                    feedbackElement.className = 'feedback incorrect';
+                    let correctText = '';
+                    if (Array.isArray(correctAnswer)) {
+                        correctText = correctAnswer.join(', ');
+                    } else {
+                        correctText = correctAnswer === 'true' ? 'True' : 
+                                     correctAnswer === 'false' ? 'False' : correctAnswer;
+                    }
+                    feedbackElement.innerHTML = `
+                        <span class="emoji">❌</span> Incorrect. The correct answer is: ${correctText}
+                        <div class="answer-explanation">${explanations[questionNum]}</div>
+                    `;
+                }
+                
+                // Highlight correct/incorrect options
+                highlightAnswers(questionNum, correctAnswer, userAnswer);
+            }
+        }
+
+        // Highlight correct and incorrect answers
+        function highlightAnswers(questionNum, correctAnswer, userAnswer) {
+            const questionCard = document.querySelector(`[data-question="${questionNum}"]`);
+            
+            if (questionNum === 7) {
+                // Multiple select
+                questionCard.querySelectorAll('.checkbox-option').forEach(option => {
+                    const value = option.dataset.value;
+                    if (correctAnswer.includes(value)) {
+                        option.classList.add('correct');
+                    } else if (userAnswer && userAnswer.includes(value)) {
+                        option.classList.add('incorrect');
+                    }
+                });
+            } else if (questionNum !== 4) {
+                // Multiple choice and true/false
+                questionCard.querySelectorAll('.option').forEach(option => {
+                    const value = option.dataset.value;
+                    if (value === correctAnswer) {
+                        option.classList.add('correct');
+                    } else if (value === userAnswer) {
+                        option.classList.add('incorrect');
+                    }
+                });
+            }
+        }
+
+        // Navigation functions
+        function nextQuestion() {
+            if (quizState.currentQuestion < quizState.totalQuestions) {
+                document.querySelector('.question-card.active').classList.remove('active');
+                quizState.currentQuestion++;
+                document.querySelector(`[data-question="${quizState.currentQuestion}"]`).classList.add('active');
+                
+                updateProgress();
+                updateNavigationButtons();
+                updateCurrentQuestionDisplay();
+            } else {
+                showResults();
+            }
+        }
+
+        function previousQuestion() {
+            if (quizState.currentQuestion > 1) {
+                document.querySelector('.question-card.active').classList.remove('active');
+                quizState.currentQuestion--;
+                document.querySelector(`[data-question="${quizState.currentQuestion}"]`).classList.add('active');
+                
+                updateProgress();
+                updateNavigationButtons();
+                updateCurrentQuestionDisplay();
+            }
+        }
+
+        function updateProgress() {
+            const progress = (quizState.currentQuestion - 1) / quizState.totalQuestions * 100;
+            document.querySelector('.progress-fill').style.width = `${progress}%`;
+        }
+
+        function updateNavigationButtons() {
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+            
+            prevBtn.disabled = quizState.currentQuestion === 1;
+            
+            if (quizState.currentQuestion === quizState.totalQuestions) {
+                nextBtn.textContent = 'Finish Quiz';
+            } else {
+                nextBtn.textContent = 'Next →';
+            }
+        }
+
+        function updateCurrentQuestionDisplay() {
+            document.getElementById('current-question').textContent = quizState.currentQuestion;
+        }
+
+        function showResults() {
+            document.querySelectorAll('.question-card').forEach(card => {
+                card.style.display = 'none';
+            });
+            document.querySelector('.buttons').style.display = 'none';
+            document.querySelector('.progress-bar').style.display = 'none';
+            document.querySelector('.score-display').style.display = 'none';
+            
+            const results = document.getElementById('results');
+            const finalScore = document.getElementById('final-score');
+            const scoreMessage = document.getElementById('score-message');
+            
+            finalScore.textContent = `${quizState.score}/${quizState.totalQuestions}`;
+            
+            const percentage = (quizState.score / quizState.totalQuestions * 100).toFixed(0);
+            
+            if (percentage >= 90) {
+                scoreMessage.textContent = "Outstanding! You're a rural Virginia expert! 🌟";
+            } else if (percentage >= 80) {
+                scoreMessage.textContent = "Great job! You have excellent knowledge of rural issues! 🎉";
+            } else if (percentage >= 70) {
+                scoreMessage.textContent = "Good work! You understand many important rural concepts! 👍";
+            } else if (percentage >= 60) {
+                scoreMessage.textContent = "Not bad! Keep learning about rural communities! 📚";
+            } else {
+                scoreMessage.textContent = "Keep studying! Rural issues are important to understand! 💪";
+            }
+            
+            results.classList.add('show');
+        }
+
+        function restartQuiz() {
+            // Reset quiz state
+            quizState.currentQuestion = 1;
+            quizState.answers = {};
+            quizState.score = 0;
+            quizState.answered = {};
+            
+            // Reset UI
+            document.querySelectorAll('.question-card').forEach(card => {
+                card.style.display = 'none';
+                card.classList.remove('active');
+            });
+            
+            document.querySelector('[data-question="1"]').classList.add('active');
+            
+            // Clear all selections and feedback
+            document.querySelectorAll('.option, .checkbox-option').forEach(opt => {
+                opt.classList.remove('selected', 'correct', 'incorrect');
+            });
+            
+            document.querySelectorAll('.feedback').forEach(feedback => {
+                feedback.className = 'feedback';
+                feedback.innerHTML = '';
+            });
+            
+            document.getElementById('answer-4').value = '';
+            
+            // Show quiz elements
+            document.querySelector('.buttons').style.display = 'flex';
+            document.querySelector('.progress-bar').style.display = 'block';
+            document.querySelector('.score-display').style.display = 'block';
+            document.getElementById('results').classList.remove('show');
+            
+            updateProgress();
+            updateNavigationButtons();
+            updateCurrentQuestionDisplay();
+        }
+
+        // Initialize the quiz when the page loads
+        document.addEventListener('DOMContentLoaded', initQuiz);
+    </script>
+</body>
+</html>
